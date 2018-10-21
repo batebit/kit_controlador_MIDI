@@ -6,7 +6,7 @@ int pinosBotoes[6] = {2, 3, 4, 5, 6, 7};
 int pinosLeds[6] = {8, 9, 10, 11, 12, 13};
 
 int notasMIDI[6] = {40, 41, 42, 36, 37, 38}; //Padrão para Ableton
-int ccMIDI[3] = {16,17,18};
+int ccMIDI[3] = {16, 17, 18};
 
 int ultimasLeiturasAnalogicas[3] = {0, 0, 0};
 
@@ -34,12 +34,12 @@ void loop() {
   for (int i = 0; i < 3; i++) {
     int leituraAnalogicaAtual = analogRead(pinosAnalogicos[i]);
     int leituraAnalogicaMapeada = map(leituraAnalogicaAtual, 0, 1023, 0, 127);
-    int delta = abs(leituraAnalogicaAtual - ultimasLeiturasAnalogicas[i]);
-    if (delta >= 2) {
-      controlChange(0, ccMIDI[i], leituraAnalogicaMapeada);
-      MidiUSB.flush();
+    int delta = abs(leituraAnalogicaMapeada - ultimasLeiturasAnalogicas[i]);
+    if (leituraAnalogicaMapeada != ultimasLeiturasAnalogicas[i]) {
+      controlChange(2, ccMIDI[i], leituraAnalogicaMapeada);
     }
-    ultimasLeiturasAnalogicas[i] = leituraAnalogicaAtual;
+    MidiUSB.flush();
+    ultimasLeiturasAnalogicas[i] = leituraAnalogicaMapeada;
   }
   for (int i = 0; i < 6; i++) {
     botoes[i]->update();
@@ -48,14 +48,14 @@ void loop() {
       Serial.print("Apertou: botão ");
       Serial.println(i);
       digitalWrite(pinosLeds[i], HIGH);
-      noteOn(0, notasMIDI[i], 127);   // Channel 0, middle C, normal velocity
+      noteOn(2, notasMIDI[i], 127);   // Channel 3, middle C, normal velocity
       MidiUSB.flush();
     }
     if (botoes[i]->fell()) {
       Serial.print("Levantou: botão ");
       Serial.println(i);
       digitalWrite(pinosLeds[i], LOW);
-      noteOff(0, notasMIDI[i], 0);   // Channel 0, middle C, normal velocity
+      noteOff(2, notasMIDI[i], 0);   // Channel 3, middle C, normal velocity
       MidiUSB.flush();
     }
   }
